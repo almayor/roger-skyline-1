@@ -1,0 +1,26 @@
+[DEFAULT]
+
+ignoreip = 127.0.0.1 192.168.56.1
+bantime  = 1m
+
+[sshd]
+
+enabled = true
+port = ssh
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+maxretry = 10
+findtime = 10m
+banaction = iptables-multiport
+
+[http-get-dos]
+
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = %(apache_error_log)s
+findtime = 300
+findtime = 300
+action = iptables[name=HTTP, port=http, protocol=tcp]
+
+

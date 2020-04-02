@@ -1,0 +1,38 @@
+---
+- name: Install ufw
+  become: true
+  package:
+    name: ufw
+    state: present
+  notify: Enable ufw
+
+- name: Disable IPv6 in ufw
+  become: true
+  lineinfile:
+    path: /etc/default/ufw
+    regex: '^IPv6\s*=\s*yes'
+    state: present
+    line: 'IPv6=no'
+  notify: Restart
+
+- name: Set defaults in ufw
+  become: true
+  ufw: 
+    rule: default
+    policy: "{{ item.policy }}"
+    direction: "{{ item.direction }}"
+  with_items:
+    - { policy: deny, direction: incoming }
+    - { policy: allow, direction: outgoing }
+  notify: Restart ufw
+
+- name: Configure ufw
+  become: true
+  ufw: 
+    rule: allow
+    src: "{{ item }}"
+  with_items:
+    - ssh/tcp
+    - http/tcp
+    - https/tcp
+  notify: Restart ufw

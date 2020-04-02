@@ -1,0 +1,12 @@
+---
+- name: Enable ufw
+  become: true
+  service:
+    name: ufw
+    state: enabled
+  
+- name: Restart ufw
+  become: true
+  service:
+    name: ufw
+    state: restarted

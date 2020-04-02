@@ -1,0 +1,32 @@
+# Used resources
+# https://codeby.net/threads/kak-nastroit-fail2ban-dlja-zaschity-servera-apache-http.70077/
+# https://www.garron.me/en/go2linux/fail2ban-protect-web-server-http-dos-attack.html
+# https://technicalramblings.com/blog/how-to-add-email-notifications-to-fail2ban/
+
+---
+- name: Install fail2ban
+  become: true
+  package:
+    name: fail2ban
+    state: present
+  notify: Enable fail2ban
+
+- name: Copy jail.local
+  become: true
+  copy:
+    dest: /etc/fail2ban/jail.local
+    src: jail.local
+    owner: root
+    group: root
+    backup: yes
+  notify: Restart fail2ban
+
+- name: Copy http-get-dos.conf
+  become: true
+  lineinfile:
+    dest: /etc/fail2ban/filter.d/http-get-dos.conf
+    src: http-get-dos.conf
+    owner: root
+    group: root
+    backup: yes
+  notify: Restart fail2ban
