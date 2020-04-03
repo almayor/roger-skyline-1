@@ -1,0 +1,6 @@
+---
+- name: Install sendmail
+  become: true
+  apt:
+    update_cache: yes
+    name: sendmail

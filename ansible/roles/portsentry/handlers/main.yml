@@ -1,5 +1,6 @@
 ---
 - name: Restart portsentry
+  become: true
   service:
     name: portsentry
     state: restarted

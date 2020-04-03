@@ -1,10 +1,12 @@
 ---
 - name: Enable fail2ban
+  become: true
   service:
     name: fail2ban
     state: enabled
 
 - name: Restart fail2ban
+  become: true
   service:
     name: fail2ban
     state: restarted

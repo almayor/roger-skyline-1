@@ -1,0 +1,18 @@
+---
+- name: Test
+  connection: network_cli
+  hosts: all
+  vars:
+    ansible_connection: ssh
+    ansible_port: 2222
+    ansible_ssh_private_key_file: ../assets/id_rsa
+    ansible_user: user
+    ansible_python_interpreter: auto_silent
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+  roles:
+    # - sshd
+    # - ufw
+    # - fail2ban
+    # - portsentry
+    # - unused-services
+    - cron

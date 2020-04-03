@@ -11,21 +11,24 @@
     state: present
   notify: Enable fail2ban
 
+- name: Install sendmail
+  include_role:
+    name: sendmail
+
+- name: Copy http-get-dos.conf
+  become: true
+  copy:
+    dest: /etc/fail2ban/filter.d/http-get-dos.conf
+    src: http-get-dos.conf
+    owner: root
+    group: root
+    backup: yes
+
 - name: Copy jail.local
   become: true
   copy:
     dest: /etc/fail2ban/jail.local
     src: jail.local
-    owner: root
-    group: root
-    backup: yes
-  notify: Restart fail2ban
-
-- name: Copy http-get-dos.conf
-  become: true
-  lineinfile:
-    dest: /etc/fail2ban/filter.d/http-get-dos.conf
-    src: http-get-dos.conf
     owner: root
     group: root
     backup: yes

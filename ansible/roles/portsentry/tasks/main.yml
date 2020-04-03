@@ -13,11 +13,11 @@
   become: true
   replace:
     path: /etc/default/portsentry
-    regex: "{{ item.regex }}"
+    regexp: "{{ item.regexp }}"
     replace: "{{ item.replace }}"
   with_items:
-    - { regex: TCP_MODE="tcp", replace: TCP_MODE="atcp" }
-    - { regex: UDP_MODE="audp", replace: UDP_MODE="audp" }
+    - { regexp: "TCP_MODE=[^\n]*", replace: TCP_MODE="atcp" }
+    - { regexp: "UDP_MODE=[^\n]*", replace: UDP_MODE="audp" }
   notify: Restart portsentry
 
 - name: Configure portsentry via /etc/portsentry/portsentry.conf
@@ -25,8 +25,8 @@
   copy:
     dest: /etc/portsentry/portsentry.conf
     src: portsentry.conf
-    owner: sudo
-    group: sudo
+    owner: root
+    group: root
     backup: yes
   notify: Restart portsentry
 

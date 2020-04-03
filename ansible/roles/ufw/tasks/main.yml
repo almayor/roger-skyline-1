@@ -1,38 +1,37 @@
 ---
 - name: Install ufw
-  become: true
+  become: yes
   package:
     name: ufw
     state: present
-  notify: Enable ufw
+    update_cache: yes
 
 - name: Disable IPv6 in ufw
-  become: true
+  become: yes
   lineinfile:
     path: /etc/default/ufw
     regex: '^IPv6\s*=\s*yes'
     state: present
     line: 'IPv6=no'
-  notify: Restart
 
 - name: Set defaults in ufw
-  become: true
+  become: yes
   ufw: 
-    rule: default
-    policy: "{{ item.policy }}"
+    default: "{{ item.default }}"
     direction: "{{ item.direction }}"
+    state: enabled
   with_items:
-    - { policy: deny, direction: incoming }
-    - { policy: allow, direction: outgoing }
-  notify: Restart ufw
+    - { default: deny, direction: incoming }
+    - { default: allow, direction: outgoing }
 
 - name: Configure ufw
-  become: true
+  become: yes
   ufw: 
-    rule: allow
-    src: "{{ item }}"
+    rule: "{{ item.rule }}"
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    state: enabled
   with_items:
-    - ssh/tcp
-    - http/tcp
-    - https/tcp
-  notify: Restart ufw
+    - { port: "{{ ansible_port }}", proto: tcp, rule: allow }
+    - { port: http, proto: tcp, rule: allow }
+    - { port: https, proto: tcp, rule: allow }

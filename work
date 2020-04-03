@@ -1,0 +1,7 @@
+1. VirtualBox partition /var, /tmp, /home (4.2G)
+2. user - resu, root - toor
+3. install and enable openssh
+4. change port from 22 to 2222
+5. setup (1) NAT, (2) Host-only network
+6. installed sudo (su -, apt install sudo)
+7. add user to sudo group

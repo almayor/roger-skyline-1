@@ -1,0 +1,50 @@
+---
+
+- name: Install sendmail
+  include_role:
+    name: sendmail
+
+- name: Copy scripts
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+    mode: '777'
+    owner: root
+    group: root
+  with_items:
+    - update_script.sh
+    - monitor_crontab.sh
+
+- name: Update/upgrade apt weekly
+  become: yes
+  cron:
+    name: "update/upgrade apt"
+    backup: yes
+    cron_file: /etc/crontab
+    user: root
+    weekday: "0"
+    hour: "4"
+    minute: "0"
+    job: /usr/local/bin/update_script.sh
+
+- name: Update/upgrade apt at reboot
+  become: yes
+  cron:
+    name: "update/upgrade apt"
+    backup: yes
+    cron_file: /etc/crontab
+    user: root
+    special_time: reboot
+    job: /usr/local/bin/update_script.sh
+
+- name: Monitor crontab
+  become: yes
+  cron:
+    name: monitor crontab"
+    backup: yes
+    cron_file: /etc/crontab
+    user: root
+    hour: "0"
+    minute: "0"
+    job: /usr/local/bin/monitor_crontab.sh

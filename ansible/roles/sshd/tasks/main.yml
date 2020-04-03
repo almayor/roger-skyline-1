@@ -1,13 +1,29 @@
 ---
 - name: Configure sshd
   become: true
-  lineinfile:
-    dest: /etc/ssh/sshd_config
+  replace:
+    path: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
+    replace: "{{ item.replace }}"
   with_items:
-    - { regexp: '^#?PermitRootLogin\s+=\s+yes',
-        line: 'PermitRootLogin = no' }
-    - { regexp: '^#?PasswordAuthentication\s+=\s+yes',
-        line: 'PasswordAuthentication = no' }
+    - { regexp: '^#?PermitRootLogin\s+[^\n]*',
+        replace: 'PermitRootLogin no' }
+    - { regexp: '^#?PasswordAuthentication\s+[^\n]*',
+        replace: 'PasswordAuthentication no' }
   notify: Restart sshd
+
+- name: Create ~/.ssh
+  file:
+    path: ~/.ssh
+    state: directory
+    mode: '755'
+
+- name: Copy authorized_keys
+  copy:
+    dest: ~/.ssh
+    src: authorized_keys
+    mode: '640'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    backup: yes
+

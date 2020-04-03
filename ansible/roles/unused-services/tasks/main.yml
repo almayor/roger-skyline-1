@@ -1,0 +1,11 @@
+# get list of all enabled services using
+# sudo systemctl list-unit-files | grep enabled
+---
+- name: Stop unused services
+  service:
+    name: {{ item }}
+    disabled: yes
+    state: stopped
+  with_items:
+    - keyboard_setup
+    - console_setup
