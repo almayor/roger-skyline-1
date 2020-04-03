@@ -1,0 +1,58 @@
+# https://docs.ansible.com/ansible/latest/modules/apache2_module_module.html
+---
+- name: Install netdata
+  include_role:
+    name: netdata
+
+- name: Install apache2
+  become: yes
+  apt:
+    pkg: apache2
+    update_cache: yes
+
+- name: Enable apache2 proxy modules
+  become: yes
+  command: "{{ item }}"
+  with_items:
+    - a2enmod ssl
+    - a2enmod proxy
+    - a2enmod proxy_http
+    - a2enmod proxy_html
+    - a2enmod xml2enc
+  notify: Restart apache2
+
+- name: Copy configuration files
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: /etc/apache2/sites-available/
+    owner: root
+    group: root
+    mode: '644'
+  notify: Reload apache2
+  with_items:
+    - netdata-proxy-http.conf
+    - netdata-proxy-https.conf
+
+- name: Copy ssl certificate and key
+  become: yes
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '640'
+  notify: Reload apache2
+  with_items:
+    - { src: ../../../assets/rs1-ssl-selfsigned.crt, dest: /etc/ssl/certs/ }
+    - { src: ../../../assets/rs1-ssl.key, dest: /etc/ssl/private/ }
+
+- name: Enable sites
+  become: yes
+  command:
+    cmd: "{{ item }}"
+  notify: Reload apache2
+  with_items:
+    - a2dissite *
+    - a2ensite netdata-proxy-http.conf
+    - a2ensite netdata-proxy-https.conf

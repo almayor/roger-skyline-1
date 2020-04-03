@@ -1,9 +1,12 @@
 # get list of all enabled services using
 # sudo systemctl list-unit-files | grep enabled
+#
+# Only use this role if you're sure that you're won't be using
+# the console on the VM (i.e. all interactions will be over SSH)
 ---
 - name: Stop unused services
   service:
-    name: {{ item }}
+    name: "{{ item }}"
     disabled: yes
     state: stopped
   with_items:

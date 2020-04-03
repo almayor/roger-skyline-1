@@ -1,0 +1,7 @@
+---
+- name: Start Netdata
+  become: yes
+  service:
+    name: netdata
+    state: started
+    enabled: yes

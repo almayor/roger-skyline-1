@@ -1,0 +1,31 @@
+# https://blog.selectel.com/netdata-monitoring-real-time/
+# full installation can't take up to 30 min
+---
+- name: Download Netdata installation script
+  become: yes
+  get_url:
+    backup: yes
+    url: https://my-netdata.io/kickstart.sh
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    mode: '744'
+
+- name: Check if Netdata is already installed
+  stat:
+      path: /usr/sbin/netdata
+  register: netdata
+
+- name: Run Netdata installation script
+  become: yes
+  command:
+    argv:
+      - /usr/local/bin/kickstart.sh
+      - --dont-wait
+      - --disable-telemetry
+  when: netdata.stat.exists == false
+  register: netdata_kickstart
+  notify: Start Netdata
+
+- name: Debug Netdata installation
+  debug: var=netdata_kickstart
