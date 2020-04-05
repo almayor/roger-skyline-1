@@ -3,8 +3,7 @@
 ignoreip = 127.0.0.1 192.168.56.1
 bantime  = 1m
 banaction = iptables-multiport
-			sendmail-whois[sendername=fail2ban@server.roger,
-			dest=unite@student.21-school.ru]
+	sendmail-whois[sendername=fail2ban@server.roger, dest=unite@student.21-school.ru]
 
 [sshd]
 
@@ -20,9 +19,10 @@ findtime = 10m
 enabled = true
 port = http,https
 filter = http-get-dos
-logpath = %(apache_error_log)s
+logpath = /var/log/apache2/access.log
 findtime = 300
-findtime = 300
-
+maxretry = 5
+action = ufw
+	sendmail-whois[sendername=fail2ban@server.rs1, dest=unite@student.21-school.ru]
 
 

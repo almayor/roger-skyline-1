@@ -1,15 +1,24 @@
 #!/bin/sh
 
 TO=unite@student.21-school.ru
-FROM=cron@server.roger
+FROM=monitor-cron@server.rs1
 SUBJECT="Crontab Monitor"
 MESSAGE="Crontab has changed!"
 
-if [ ! -e $SHA_FILE ]
-then
-	sha1sum /etc/crontab > etc/crontab.sha
-elif ! sha1sum -c $SHA_FILE 2>/dev/null 1>&2
-then
-	echo -e $MESSAGE | sendmail $TO -f $FROM -s $SUBJECT
-	sha1sum /etc/crontab > etc/crontab.sha
+EMAIL=$(cat << EOF
+Subject: $SUBJECT
+From: <$FROM> "$FROM"
+To: $TO
+$MESSAGE
+EOF
+)
+
+CRONTAB=/etc/crontab
+CRONTAB_SHA=/etc/crontab.sha
+
+if [ ! -e $CRONTAB_SHA ]; then
+	sha1sum $CRONTAB > $CRONTAB_SHA
+elif ! sha1sum -c $CRONTAB_SHA 2>/dev/null 1>&2; then
+	sha1sum $CRONTAB > $CRONTAB_SHA
+	echo "$EMAIL" |  sendmail $TO
 fi

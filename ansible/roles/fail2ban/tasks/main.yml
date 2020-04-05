@@ -15,21 +15,18 @@
   include_role:
     name: sendmail
 
-- name: Copy http-get-dos.conf
+- name: Copy configuration files
   become: true
   copy:
-    dest: /etc/fail2ban/filter.d/http-get-dos.conf
-    src: http-get-dos.conf
+    dest: "{{ item.dest }}"
+    src: "{{ item.src }}"
     owner: root
     group: root
     backup: yes
-
-- name: Copy jail.local
-  become: true
-  copy:
-    dest: /etc/fail2ban/jail.local
-    src: jail.local
-    owner: root
-    group: root
-    backup: yes
-  notify: Restart fail2ban
+  with_items:
+    - { dest: /etc/fail2ban/filter.d/http-get-dos.conf,
+        src: http-get-dos.conf }
+    - { dest: /etc/fail2ban/jail.local,
+        src: jail.local }
+    - { dest: /etc/fail2ban/action.d/sendmail-whois.local,
+        src: sendmail-whois.local }
