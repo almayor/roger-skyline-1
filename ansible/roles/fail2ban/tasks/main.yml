@@ -30,3 +30,4 @@
         src: jail.local }
     - { dest: /etc/fail2ban/action.d/sendmail-whois.local,
         src: sendmail-whois.local }
+  notify: Restart fail2ban
