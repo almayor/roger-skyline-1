@@ -1,0 +1,73 @@
+# set defaults
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+
+# accept all on LAN
+iptables -A INPUT -i enp0s8 -j ACCEPT
+iptables -A OUTPUT -i enp0s8 -j ACCEPT
+iptables -A FORWARD -i enp0s8 -j ACCEPT
+
+# create blocklist set
+ipset create BLACKLIST nethash timeout 84400 # timeout after one day
+
+# create LOGDROP chain
+iptables -N LOGDROP
+iptables -A LOGDROP -j LOG --log-prefix "IPTables: "
+iptables -P LOGDROP DROP
+
+# accept established connections
+iptables -P INPUT -m state --state ESTABLISHED -j ACCEPT
+
+# drop all invalid packets
+iptables -A INPUT -m state --state INVALID -j DROP
+iptables -A FORWARD -m state --state INVALID -j DROP
+iptables -A OUTPUT -m state --state INVALID -j DROP
+
+# stop icmp-based attacks (e.g. rewriting routing table cache via REDIRECT)
+iptables -A INPUT -p icmp ! -icmp-types 3,8,12 -j LOGDROP
+iptables -A OUTPUT -p icmp ! -icmp-types 0,3,4,11,12 -j LOGDROP
+
+# blacklist nmap scanners
+iptables -A INPUT -p tcp -m osf --genre NMAP \
+		-m set --add-set BLACKLIST src -j LOGDROP
+
+# honeypotting portscanners
+iptables -A INPUT -m multiport ! --dports 80,443,2222 \
+		-m set --add-set BLACKLIST src -j LOGDROP
+
+# meaningless TCP frames
+iptables -A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -j LOGDROP # FIN
+iptables -A INPUT -p tcp -m tcp --tcp-flags ALL ALL -j LOGDROP # XMAS
+iptables -A INPUT -p tcp -m tcp --tcp-flags ALL NONE -j LOGDROP # NULL
+iptables -A INPUT -p tcp -m tcp --tcp-flags SYN,RST SYN,RST -j LOGDROP
+iptables -A INPUT -p tcp -m tcp --tcp-flags FIN,RST FIN,RST -j LOGDROP
+iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,FIN FIN -j LOGDROP 
+iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,PSH PSH -j LOGDROP
+iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,URG URG -j LOGDROP
+
+# spoofing (block LAN connections across external interface)
+iptables -A INPUT -i enp0s9 -s 192.168.56.1/30 -j LOGDROP
+
+# blacklist SSH bruteforce attackers
+iptables -A INPUT --dport 2222 \
+		-m hashlimit --hashlimit-above 2/min --hashlimit-mode srcip \
+		-m set --add-set BLACKLIST src -j LOGDROP
+
+# mitigate DOS attacks
+iptables -A INPUT -p tcp --tcp-flags RST RST \
+		-m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip \
+		-j REJECT # rst flood
+iptables -A FORWARD -p tcp --syn \
+		-m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip \
+		-j REJECT # syn flood
+iptables -A FORWARD -p icmp --icmp-type echo-request \
+		-m hashlimit --hashlimit-above 2/sec --hashlimit-mode srcip \
+		-j REJECT # ping-death
+iptables -A FORWARD -p tcp \
+		-m hashlimit --hashlimit-above 20/min --hashlimit-mode srcip \
+		-j REJECT # regular HTTP(S) DOS
+
+# For more information, read
+# https://xakep.ru/2010/11/02/53653/#toc01
+# https://serverfault.com/questions/410604/iptables-rules-to-counter-the-most-common-dos-attacks
+

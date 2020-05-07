@@ -1,5 +1,5 @@
 ---
-- name: Test
+- name: rs1
   connection: network_cli
   hosts: all
   vars:
@@ -11,9 +11,7 @@
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
   roles:
     - sshd
-    - ufw
-    - fail2ban
-    - portsentry
+    - iptables
     # - unused-services
     - cron
     - netdata

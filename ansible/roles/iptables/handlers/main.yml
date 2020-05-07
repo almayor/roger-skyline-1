@@ -1,0 +1,4 @@
+- name: Restart iptables
+  become: yes
+  command: /etc/init.d/iptables-persistent reload
+ 
