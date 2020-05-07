@@ -76,27 +76,15 @@ Ansible will
 	* disable root login
 	* disable password authentication
 	* add the RSA key from `assets/rs1-ssh.pub` to `~/.ssh/authorized_keys`
-2. *ufw (firewall)*
-	* install [`ufw`](https://wiki.debian.org/Uncomplicated%20Firewall%20%28ufw%29) using `apt` and enable it
-	* disable IPv6
-	* deny incoming, allow outgong connections by default
-	* allow connections to SSH, HTTP and HTTPS ports
-	* allow connections to port 19999 from `localhost` only (necessary for Netdata later on)
+2. *iptables*
+	* drop invalid packets
+	* prevent ICMP-based attacks
+	* blacklist port scanners
+	* blacklist spoofer
+	* blacklist SSH bruteforce attackers
+	* mitigate DOS attacks (HTTP(S), RST flood, SYN flood, ping-death)
 2. *sendmail (email server)*
 	* install [`sendmail`](https://tecadmin.net/install-sendmail-on-debian-9-stretch/) using `apt`
-3. *fail2ban (DOS protection)*
-	* install [`fail2ban`](https://en.wikipedia.org/wiki/Fail2ban) using `apt` and enable it
-	* create a new jail for generalized HTTP attacks via `GET`
-	* enable jails for HTTP and SSH attacks
-	* configure banaction to ban attackers' IP addresses via `iptabes` and send an email (via Sendmail) to my `@student.21-school.ru` mailbox.
-	* ignore host IP address
-4. *portsentry (port scan protection)*
-	* install [`portsentry`](https://manpages.debian.org/testing/portsentry/portsentry.8.en.html) using `apt` and enable it
-	* change operation mode to `audp` and `utcp` for advanced scan detection
-	* configure to block IP's performing port scans via UDP and TCP
-	* set up kill route via iptables
-	* display port banner to attackers
-	* ignore host IP address
 5. *cron*
 	* create a script that updates all the sources of package, then your packages and which logs the whole in a file named `/var/log/update_script.log`
 	* create a scheduled task for this script once a week at 4AM and every time the machine reboots.
@@ -108,16 +96,15 @@ Ansible will
 	* install [`apache2`](https://httpd.apache.org) using `apt` and enable it
 	* configure a virtual host as a proxy to the netdata server
 	* enable connections via HTTP and HTTPS (using `assets/rs1-ssl-selfsigned.crt` and `rs1-ssl.key`)
-8. *stopped unused services* –– optional
+8. *unused_services* –– optional
 	* stop `keyboard_setup.service` and `console_setup.service` (unnecessary if the server is only accessed via ssh)
 
 ## Useful links
-* https://codeby.net/threads/kak-nastroit-fail2ban-dlja-zaschity-servera-apache-http.70077/
-* https://www.garron.me/en/go2linux/fail2ban-protect-web-server-http-dos-attack.html
-* https://technicalramblings.com/blog/how-to-add-email-notifications-to-fail2ban/
-* https://www.opennet.ru/docs/RUS/portsentry/portsentry4.html
-* https://www.computersecuritystudent.com/UNIX/UBUNTU/1204/lesson14/index.html
-* https://github.com/KseniiaPrytkova/roger-skyline-1
-* https://github.com/acuD1/roger-skyline-1
+* <https://codeby.net/threads/kak-nastroit-fail2ban-dlja-zaschity-servera-apache-http.70077/>
+* <https://xakep.ru/2010/11/02/53653/>
+* <https://serverfault.com/questions/410604/iptables-rules-to-counter-the-most-common-dos-attacks>
+* <https://www.computersecuritystudent.com/UNIX/UBUNTU/1204/lesson14/index.html>
+* <https://github.com/KseniiaPrytkova/roger-skyline-1>
+* <https://github.com/acuD1/roger-skyline-1>
 
 
