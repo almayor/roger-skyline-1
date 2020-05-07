@@ -81,7 +81,6 @@ Ansible will
 	* prevent ICMP-based attacks
 	* blacklist port scanners
 	* blacklist spoofer
-	* blacklist SSH bruteforce attackers
 	* mitigate DOS attacks (HTTP(S), RST flood, SYN flood, ping-death)
 2. *sendmail (email server)*
 	* install [`sendmail`](https://tecadmin.net/install-sendmail-on-debian-9-stretch/) using `apt`

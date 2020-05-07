@@ -9,10 +9,23 @@
     - ipset
     - iptables-persistent
 
-- name: Copy iptable rules
+- name: Configure iptables-persistent
+  become: yes
+  copy:
+    dest: /etc/init.d/netfilter-persistent
+    src: netfilter-persistent
+    owner: root
+    group: root
+
+- name: Create new ipset  # timeout after one hour
+  become: yes
+  command: ipset create -exist BLACKLIST nethash timeout 3600
+
+- name: Configure iptables
+  become: yes
   copy:
     dest: /etc/iptables/rules.v4
     src: rules.v4
     owner: root
     group: root
-  notify: Restart iptables
+  notify: Reload iptables

@@ -1,4 +1,4 @@
-- name: Restart iptables
+- name: Reload iptables
   become: yes
-  command: /etc/init.d/iptables-persistent reload
+  command: /etc/init.d/netfilter-persistent reload
  

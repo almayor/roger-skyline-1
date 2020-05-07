@@ -1,73 +1,62 @@
 # set defaults
-iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
+*filter
+:INPUT ACCEPT
+:OUTPUT ACCEPT
+:ICMP REJECT
+:BLACKLIST DROP
 
-# accept all on LAN
-iptables -A INPUT -i enp0s8 -j ACCEPT
-iptables -A OUTPUT -i enp0s8 -j ACCEPT
-iptables -A FORWARD -i enp0s8 -j ACCEPT
+# accept all on LAN, local and established connections
+-A INPUT -i enp0s8 -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m state --state ESTABLISHED -j ACCEPT
 
-# create blocklist set
-ipset create BLACKLIST nethash timeout 84400 # timeout after one day
+# drop spoofing and blacklisted addresses and UDP connections
+-A INPUT -m set --match-set BLACKLIST src -j DROP
+-A INPUT -i enp0s9 -s 192.168.56.1/30 -j DROP
+-A INPUT -p udp -j DROP
 
-# create LOGDROP chain
-iptables -N LOGDROP
-iptables -A LOGDROP -j LOG --log-prefix "IPTables: "
-iptables -P LOGDROP DROP
-
-# accept established connections
-iptables -P INPUT -m state --state ESTABLISHED -j ACCEPT
+# configure BLACKLIST chain
+-A BLACKLIST -j SET --add-set BLACKLIST src
+-A BLACKLIST -j LOG --log-prefix "IP blacklisted: "
+-A BLACKLIST -j DROP
 
 # drop all invalid packets
-iptables -A INPUT -m state --state INVALID -j DROP
-iptables -A FORWARD -m state --state INVALID -j DROP
-iptables -A OUTPUT -m state --state INVALID -j DROP
+-A INPUT -m state --state INVALID -j DROP
+-A FORWARD -m state --state INVALID -j DROP
+-A OUTPUT -m state --state INVALID -j DROP
 
 # stop icmp-based attacks (e.g. rewriting routing table cache via REDIRECT)
-iptables -A INPUT -p icmp ! -icmp-types 3,8,12 -j LOGDROP
-iptables -A OUTPUT -p icmp ! -icmp-types 0,3,4,11,12 -j LOGDROP
+-A INPUT -p icmp -j ICMP
+-A ICMP -p icmp --icmp-type 3 -j ACCEPT
+-A ICMP -p icmp --icmp-type 12 -j ACCEPT
+-A ICMP -p icmp --icmp-type 8 -j ACCEPT
+-A ICMP -j REJECT
 
-# blacklist nmap scanners
-iptables -A INPUT -p tcp -m osf --genre NMAP \
-		-m set --add-set BLACKLIST src -j LOGDROP
-
-# honeypotting portscanners
-iptables -A INPUT -m multiport ! --dports 80,443,2222 \
-		-m set --add-set BLACKLIST src -j LOGDROP
+# blacklist port scanners
+-A INPUT -p tcp -m osf --genre NMAP -j BLACKLIST
+-A INPUT -p tcp -m multiport ! --dports 80,443,2222 -j BLACKLIST
 
 # meaningless TCP frames
-iptables -A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -j LOGDROP # FIN
-iptables -A INPUT -p tcp -m tcp --tcp-flags ALL ALL -j LOGDROP # XMAS
-iptables -A INPUT -p tcp -m tcp --tcp-flags ALL NONE -j LOGDROP # NULL
-iptables -A INPUT -p tcp -m tcp --tcp-flags SYN,RST SYN,RST -j LOGDROP
-iptables -A INPUT -p tcp -m tcp --tcp-flags FIN,RST FIN,RST -j LOGDROP
-iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,FIN FIN -j LOGDROP 
-iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,PSH PSH -j LOGDROP
-iptables -A INPUT -p tcp -m tcp --tcp-flags ACK,URG URG -j LOGDROP
-
-# spoofing (block LAN connections across external interface)
-iptables -A INPUT -i enp0s9 -s 192.168.56.1/30 -j LOGDROP
+-A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags ALL ALL -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags ALL NONE -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags SYN,RST SYN,RST -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags FIN,RST FIN,RST -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags ACK,FIN FIN -j DROP 
+-A INPUT -p tcp -m tcp --tcp-flags ACK,PSH PSH -j DROP
+-A INPUT -p tcp -m tcp --tcp-flags ACK,URG URG -j DROP
 
 # blacklist SSH bruteforce attackers
-iptables -A INPUT --dport 2222 \
-		-m hashlimit --hashlimit-above 2/min --hashlimit-mode srcip \
-		-m set --add-set BLACKLIST src -j LOGDROP
+-A INPUT -p tcp --dport 2222 -m hashlimit --hashlimit-above 2/min --hashlimit-name ssh-bruteforce --hashlimit-mode srcip -j BLACKLIST
 
 # mitigate DOS attacks
-iptables -A INPUT -p tcp --tcp-flags RST RST \
-		-m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip \
-		-j REJECT # rst flood
-iptables -A FORWARD -p tcp --syn \
-		-m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip \
-		-j REJECT # syn flood
-iptables -A FORWARD -p icmp --icmp-type echo-request \
-		-m hashlimit --hashlimit-above 2/sec --hashlimit-mode srcip \
-		-j REJECT # ping-death
-iptables -A FORWARD -p tcp \
-		-m hashlimit --hashlimit-above 20/min --hashlimit-mode srcip \
-		-j REJECT # regular HTTP(S) DOS
+-A INPUT -p tcp --tcp-flags RST RST -m hashlimit --hashlimit-above 1/sec --hashlimit-name rst-flood --hashlimit-mode srcip -j REJECT
+-A INPUT -p tcp --syn -m hashlimit --hashlimit-above 1/sec --hashlimit-name syn-flood --hashlimit-mode srcip -j REJECT
+-A INPUT -p tcp -m hashlimit --hashlimit-above 20/min --hashlimit-name http-dos --hashlimit-mode srcip -j REJECT
+
+# commit
+COMMIT
 
 # For more information, read
 # https://xakep.ru/2010/11/02/53653/#toc01
 # https://serverfault.com/questions/410604/iptables-rules-to-counter-the-most-common-dos-attacks
-
