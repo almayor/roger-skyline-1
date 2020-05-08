@@ -46,13 +46,10 @@
 -A INPUT -p tcp -m tcp --tcp-flags ACK,PSH PSH -j DROP
 -A INPUT -p tcp -m tcp --tcp-flags ACK,URG URG -j DROP
 
-# blacklist SSH bruteforce attackers
--A INPUT -p tcp --dport 2222 -m hashlimit --hashlimit-above 2/min --hashlimit-name ssh-bruteforce --hashlimit-mode srcip -j BLACKLIST
-
 # mitigate DOS attacks
 -A INPUT -p tcp --tcp-flags RST RST -m hashlimit --hashlimit-above 1/sec --hashlimit-name rst-flood --hashlimit-mode srcip -j REJECT
--A INPUT -p tcp --syn -m hashlimit --hashlimit-above 1/sec --hashlimit-name syn-flood --hashlimit-mode srcip -j REJECT
--A INPUT -p tcp -m hashlimit --hashlimit-above 20/min --hashlimit-name http-dos --hashlimit-mode srcip -j REJECT
+-A INPUT -p tcp -m hashlimit --hashlimit-above 50/min --hashlimit-burst 20 --hashlimit-name http-dos-block --hashlimit-mode srcip -j BLACKLIST
+-A INPUT -p tcp -m hashlimit --hashlimit-above 30/min --hashlimit-name http-dos --hashlimit-mode srcip -j REJECT
 
 # commit
 COMMIT

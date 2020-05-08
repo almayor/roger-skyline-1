@@ -26,4 +26,5 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     backup: yes
+  notify: Restart sshd
 

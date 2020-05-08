@@ -48,7 +48,7 @@ allow-hotplug enp0s8
 iface enp0s8 inet static
 	address 192.168.56.2/30
 ```
-6. edit `/etc/ssh/sshd-config` to change default SSH port to 2222
+6. edit `/etc/ssh/sshd_config` to change default SSH port to 2222
 7. install `sudo` with `apt` and add `user` to `sudo` group
 
 ```
@@ -69,6 +69,8 @@ brew install ansible
 ```
 ansible-playbook -i ansible/hosts ansible/rs1.yml --ask-pass --ask-become-pass
 ```
+
+*(Note that Netdata installation may take 10+ min.)*
 
 Ansible will
 

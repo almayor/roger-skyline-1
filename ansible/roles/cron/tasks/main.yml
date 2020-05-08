@@ -19,7 +19,7 @@
 - name: Update/upgrade apt weekly
   become: yes
   cron:
-    name: "update/upgrade apt"
+    name: "update/upgrade apt weekly"
     cron_file: /etc/crontab
     user: root
     weekday: "0"
@@ -30,7 +30,7 @@
 - name: Update/upgrade apt at reboot
   become: yes
   cron:
-    name: "update/upgrade apt"
+    name: "update/upgrade apt on reboot"
     cron_file: /etc/crontab
     user: root
     special_time: reboot
@@ -39,7 +39,7 @@
 - name: Monitor crontab
   become: yes
   cron:
-    name: monitor crontab"
+    name: "monitor crontab daily"
     cron_file: /etc/crontab
     user: root
     hour: "0"
