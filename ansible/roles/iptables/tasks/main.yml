@@ -12,8 +12,8 @@
 - name: Configure iptables-persistent
   become: yes
   copy:
-    dest: /etc/init.d/netfilter-persistent
-    src: netfilter-persistent
+    dest: /usr/share/netfilter-persistent/plugins.d/15-ip4tables
+    src: 15-ip4tables
     owner: root
     group: root
 
