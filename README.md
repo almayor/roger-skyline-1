@@ -101,7 +101,6 @@ Ansible will
 	* stop `keyboard_setup.service` and `console_setup.service` (unnecessary if the server is only accessed via ssh)
 
 ## Useful links
-* <https://codeby.net/threads/kak-nastroit-fail2ban-dlja-zaschity-servera-apache-http.70077/>
 * <https://xakep.ru/2010/11/02/53653/>
 * <https://serverfault.com/questions/410604/iptables-rules-to-counter-the-most-common-dos-attacks>
 * <https://www.computersecuritystudent.com/UNIX/UBUNTU/1204/lesson14/index.html>
