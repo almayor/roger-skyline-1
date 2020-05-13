@@ -17,9 +17,16 @@
     owner: root
     group: root
 
+- name: Check if blacklist ipset already exists
+  become: yes
+  command: ipset -L BLACKLIST
+  register: blacklist_exists
+  ignore_errors: yes
+
 - name: Create new ipset  # timeout after one hour
   become: yes
   command: ipset create -exist BLACKLIST nethash timeout 3600
+  when: blacklist_exists.rc == 1
 
 - name: Configure iptables
   become: yes
