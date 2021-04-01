@@ -82,14 +82,14 @@ Ansible will
 	* drop invalid packets
 	* prevent ICMP-based attacks
 	* blacklist port scanners
-	* blacklist spoofer
+	* blacklist IP spoofers
 	* mitigate DOS attacks (HTTP(S), RST flood, SYN flood, ping-death)
 2. *sendmail (email server)*
 	* install [`sendmail`](https://tecadmin.net/install-sendmail-on-debian-9-stretch/) using `apt`
 5. *cron*
 	* create a script that updates all the sources of package, then your packages and which logs the whole in a file named `/var/log/update_script.log`
 	* create a scheduled task for this script once a week at 4AM and every time the machine reboots.
-	* create a script to monitor changes of the /etc/crontab file and sends an email to root if it has been modified.
+	* create a script to monitor changes of the `/etc/crontab` file and sends an email to root if it has been modified.
 	* create a scheduled script task every day at midnight.
 6. *netdata (real-time performance monitoring)*
 	* download and install [Netdata](https://www.netdata.cloud)
